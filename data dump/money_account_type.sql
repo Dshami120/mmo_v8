@@ -1,0 +1,8 @@
+CREATE TABLE `money_account_type` (
+  `SYS_ACCOUNT_TYPE_ID` int(11) NOT NULL AUTO_INCREMENT,
+  `ACCOUNT_TYPE_NAME` varchar(45) NOT NULL,
+  PRIMARY KEY (`SYS_ACCOUNT_TYPE_ID`),
+  UNIQUE KEY `SYS_ACCOUNT_TYPE_ID_UNIQUE` (`SYS_ACCOUNT_TYPE_ID`)
+);
+
+INSERT INTO `money_account_type` VALUES (1,'Income'),(2,'Saving'),(3,'Expense');

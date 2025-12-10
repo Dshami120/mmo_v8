@@ -1,0 +1,300 @@
+#############################################
+# THE ULTIMATE .gitignore (GLOBAL + ALL-LANG)
+# Covers: Windows, macOS, Linux, Java, Python,
+# Node.js, C, C++, C#, Rust, Go, PHP, HTML/CSS/JS,
+# MySQL, VSCode, IntelliJ, Eclipse, NetBeans,
+# Unity, Unreal, Android, iOS, Docker, AWS, etc.
+#############################################
+
+###############
+# OS FILES
+###############
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+._*
+.Spotlight-V100
+.Trashes
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.lnk
+
+# Linux
+*~
+.nfs*
+
+###############
+# GENERAL TEMP
+###############
+*.log
+*.tmp
+*.temp
+*.bak
+*.swp
+*.swo
+*.orig
+*.lock
+*.cache
+*.pid
+*.seed
+*.retry
+*.backup
+*.old
+*.crt
+*.pem
+*.key
+*.pfx
+*.p12
+*.sqlite
+*.sqlite3
+
+###############
+# ARCHIVES
+###############
+*.zip
+*.tar
+*.tar.gz
+*.rar
+*.7z
+*.iso
+
+###############
+# ENV / SECRETS
+###############
+.env
+.env.*
+*.env.local
+*.secret
+secrets.yml
+secrets.json
+config.local.*
+credentials.yml
+api_keys.json
+
+###############
+# BUILD / DIST
+###############
+build/
+dist/
+target/
+out/
+bin/
+obj/
+release/
+debug/
+*.dll
+*.exe
+*.so
+*.dylib
+*.jar
+*.war
+*.ear
+*.class
+*.o
+*.a
+
+###############
+# DEPENDENCIES
+###############
+# Node
+node_modules/
+npm-debug.log
+yarn-debug.log
+.pnp/
+.pnp.js
+
+# Java (Maven/Gradle)
+.mvn/
+.mvnd/
+target/
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+.venv/
+venv/
+env/
+ENV/
+pip-wheel-metadata/
+.wheels/
+.python-version
+
+# PHP / Composer
+vendor/
+
+# Ruby
+.bundle/
+vendor/bundle/
+*.gem
+
+# Rust
+target/
+
+# Go
+bin/
+pkg/
+*.test
+
+# C/C++ CMake
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+*.cmake
+*.out
+
+###############
+# WEB DEV
+###############
+# Next.js / React / Vite / Vue
+.next/
+.nuxt/
+out/
+.svelte-kit/
+.vercel/
+.netlify/
+.cache/
+coverage/
+
+# JS tooling
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-lock.yaml
+bun.lockb
+vite.config.*
+
+###############
+# DATABASES
+###############
+*.db
+*.sql
+*.sqlite
+*.sqlite3
+dump.rdb
+*.mwb
+*.frm
+*.ibd
+
+###############
+# CLOUD & DOCKER
+###############
+# Docker
+docker-compose.override.yml
+.docker/
+docker-data/
+
+# AWS
+.aws/
+.elasticbeanstalk/
+
+# Firebase
+.firebaserc
+.firebase/
+
+###############
+# MOBILE DEV
+###############
+# Android
+*.apk
+*.aar
+*.aab
+*.dex
+*.class
+.gradle/
+local.properties
+.idea/
+
+# iOS
+Pods/
+*.xcworkspace
+*.xcuserstate
+*.xcuserdata/
+DerivedData/
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+###############
+# IDE / EDITOR JUNK
+###############
+# VSCode
+.vscode/
+.history/
+*.code-workspace
+
+# JetBrains (IntelliJ, PyCharm, WebStorm)
+.idea/
+*.iml
+
+# Eclipse
+.project
+.classpath
+.cproject
+.settings/
+
+# NetBeans
+nbproject/private/
+
+# Sublime
+*.sublime-workspace
+*.sublime-project
+
+# Vim
+*.swp
+*.swo
+.vim/
+.vscode/
+
+# Emacs
+*~
+\#*\#
+.emacs.desktop
+
+###############
+# GAME ENGINES
+###############
+# Unity
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Ll]ogs/
+MemoryCaptures/
+*.unitypackage
+
+# Unreal
+Saved/
+Intermediate/
+DerivedDataCache/
+
+###############
+# MISC
+###############
+*.iml
+*.ipr
+*.iws
+*.tmp
+*.temp
+*.log
+*.bak
+*.rej
+*.orig
+*.swo
+*.swp
+*.tmp
+*.DS_Store
+*.class
+*.pyc
