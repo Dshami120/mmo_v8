@@ -1,134 +1,226 @@
 document.addEventListener("DOMContentLoaded", () => {
 
     /* ======================================================
-       DASHBOARD CHARTS (unchanged from your version)
+       DASHBOARD CHARTS
     ====================================================== */
 
-    if (document.getElementById("spendingCategoryChart")) {
-        new Chart(spendingCategoryChart, {
-            type: 'doughnut',
+    // ------------------------------------------------------
+    // Spending by Category (Doughnut Chart)
+    // ------------------------------------------------------
+    const spendingCategoryCanvas = document.getElementById("spendingCategoryChart");
+    if (spendingCategoryCanvas && typeof Chart !== "undefined") {
+        new Chart(spendingCategoryCanvas, {
+            type: "doughnut",
             data: {
-                labels: ['Rent', 'Groceries', 'Transportation', 'Entertainment'],
+                labels: ["Rent", "Groceries", "Transportation", "Entertainment"],
                 datasets: [{
                     data: [900, 320, 180, 140],
-                    backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#8BC34A']
+                    backgroundColor: ["#FF6384", "#36A2EB", "#FFCE56", "#8BC34A"]
                 }]
             }
         });
     }
 
-    if (document.getElementById("incomeExpenseChart")) {
-        new Chart(incomeExpenseChart, {
-            type: 'bar',
+    // ------------------------------------------------------
+    // Income vs Expenses (Bar Chart)
+    // ------------------------------------------------------
+    const incomeExpenseCanvas = document.getElementById("incomeExpenseChart");
+    if (incomeExpenseCanvas && typeof Chart !== "undefined") {
+        new Chart(incomeExpenseCanvas, {
+            type: "bar",
             data: {
-                labels: ['Income', 'Expenses'],
+                labels: ["Income", "Expenses"],
                 datasets: [{
                     data: [3200, 2150],
-                    backgroundColor: ['#4CAF50', '#F44336']
+                    backgroundColor: ["#4CAF50", "#F44336"]
                 }]
             }
         });
     }
 
-    if (document.getElementById("accountsChart")) {
-        new Chart(accountsChart, {
-            type: 'pie',
+
+
+    /* ======================================================
+       ACCOUNTS CHART (Horizontal Bar Chart)
+       Dynamically filled using PHP variables:
+       - accountLabels
+       - accountValues
+    ====================================================== */
+    const accountsCanvas = document.getElementById("accountsChart");
+
+    if (
+        accountsCanvas &&
+        typeof Chart !== "undefined" &&
+        typeof accountLabels !== "undefined" &&
+        Array.isArray(accountLabels) &&
+        accountLabels.length > 0
+    ) {
+
+        // Large professional color palette
+        const ACCOUNT_COLORS = [
+            "#4A90E2", "#50E3C2", "#B8E986", "#F8E71C", "#F5A623",
+            "#D0021B", "#9013FE", "#8B572A", "#417505", "#BD10E0",
+            "#7ED321", "#F66A6A", "#1ABC9C", "#16A085", "#2ECC71",
+            "#27AE60", "#3498DB", "#2980B9", "#9B59B6", "#8E44AD",
+            "#F1C40F", "#F39C12", "#E67E22", "#D35400", "#E74C3C",
+            "#C0392B", "#95A5A6", "#7F8C8D"
+        ];
+
+        new Chart(accountsCanvas.getContext("2d"), {
+            type: "bar",
             data: {
-                labels: ['Checking', 'Savings', 'Cash'],
+                labels: accountLabels,
                 datasets: [{
-                    data: [3200, 5600, 150],
-                    backgroundColor: ['#42A5F5', '#66BB6A', '#FFA726']
+                    label: "Balance ($)",
+                    data: accountValues,
+                    backgroundColor: ACCOUNT_COLORS.slice(0, accountLabels.length),
+                    barThickness: 10,       // Make bars thick
+                    maxBarThickness: 40     // Prevent overly huge bars
                 }]
-            }
-        });
-    }
+            },
 
-    if (document.getElementById("budgetChart")) {
-        new Chart(budgetChart, {
-            type: 'bar',
-            data: {
-                labels: ['Groceries', 'Transportation', 'Entertainment'],
-                datasets: [{
-                    label: 'Used %',
-                    data: [65, 60, 70],
-                    backgroundColor: ['#03A9F4', '#8BC34A', '#FF9800']
-                }]
-            }
-        });
-    }
+            options: {
+                indexAxis: "y", // Converts bar chart to horizontal orientation
 
-    if (document.getElementById("expensesChart")) {
-        new Chart(expensesChart, {
-            type: 'bar',
-            data: {
-                labels: ['Groceries', 'Utilities', 'Transportation', 'Entertainment'],
-                datasets: [{
-                    label: 'Amount',
-                    data: [260, 95, 90, 70],
-                    backgroundColor: '#E91E63'
-                }]
-            }
-        });
-    }
+                responsive: true,
 
-    if (document.getElementById("incomeChart")) {
-        new Chart(incomeChart, {
-            type: 'line',
-            data: {
-                labels: ['Nov 1', 'Nov 7', 'Nov 14'],
-                datasets: [{
-                    label: 'Income',
-                    data: [1200, 240, 1600],
-                    borderColor: '#2196F3',
-                    tension: 0.4
-                }]
-            }
-        });
-    }
+                plugins: {
+                    title: {
+                        display: true,
+                        text: "Account Balance Comparison"
+                    },
+                    legend: {
+                        display: false // Not needed for single dataset
+                    }
+                },
 
-/* ========= SAVINGS CHART (DB DRIVEN) ========= */
-if (document.getElementById("savingsChart") &&
-    typeof savingsLabels !== "undefined" &&
-    savingsLabels.length > 0) {
-
-    new Chart(savingsChart, {
-        type: "doughnut",
-        data: {
-            labels: savingsLabels.map((goal, i) =>
-                `${goal} (${savingsPercents[i]}%)`
-            ),
-            datasets: [{
-                data: savingsPercents,
-                backgroundColor: [
-                    "#FF5722",
-                    "#009688",
-                    "#9C27B0",
-                    "#03A9F4",
-                    "#8BC34A",
-                    "#FFC107"
-                ]
-            }]
-        },
-        options: {
-            plugins: {
-                title: {
-                    display: true,
-                    text: "Savings Progress (%)"
+                scales: {
+                    x: {
+                        ticks: {
+                            callback: value => "$" + value.toLocaleString()
+                        }
+                    }
                 }
             }
-        }
-    });
-}
+        });
+    }
 
 
-    if (document.getElementById("historyChart")) {
-        new Chart(historyChart, {
-            type: 'line',
+
+    /* ======================================================
+       BUDGET CHART
+    ====================================================== */
+    const budgetCanvas = document.getElementById("budgetChart");
+    if (budgetCanvas && typeof Chart !== "undefined") {
+        new Chart(budgetCanvas, {
+            type: "bar",
             data: {
-                labels: ['Nov 13', 'Nov 14', 'Nov 15'],
+                labels: ["Groceries", "Transportation", "Entertainment"],
+                datasets: [{
+                    label: "Used %",
+                    data: [65, 60, 70],
+                    backgroundColor: ["#03A9F4", "#8BC34A", "#FF9800"]
+                }]
+            }
+        });
+    }
+
+
+
+    /* ======================================================
+       EXPENSES CHART
+    ====================================================== */
+    const expensesCanvas = document.getElementById("expensesChart");
+    if (expensesCanvas && typeof Chart !== "undefined") {
+        new Chart(expensesCanvas, {
+            type: "bar",
+            data: {
+                labels: ["Groceries", "Utilities", "Transportation", "Entertainment"],
+                datasets: [{
+                    label: "Amount",
+                    data: [260, 95, 90, 70],
+                    backgroundColor: "#E91E63"
+                }]
+            }
+        });
+    }
+
+
+
+    /* ======================================================
+       INCOME CHART
+    ====================================================== */
+    const incomeCanvas = document.getElementById("incomeChart");
+    if (incomeCanvas && typeof Chart !== "undefined") {
+        new Chart(incomeCanvas, {
+            type: "line",
+            data: {
+                labels: ["Nov 1", "Nov 7", "Nov 14"],
+                datasets: [{
+                    label: "Income",
+                    data: [1200, 240, 1600],
+                    borderColor: "#2196F3",
+                    tension: 0.4 // Rounded lines
+                }]
+            }
+        });
+    }
+
+
+
+    /* ======================================================
+       SAVINGS CHART (DB-driven)
+       Requires PHP to define:
+       - savingsLabels
+       - savingsPercents
+    ====================================================== */
+    const savingsCanvas = document.getElementById("savingsChart");
+    if (
+        savingsCanvas &&
+        typeof Chart !== "undefined" &&
+        typeof savingsLabels !== "undefined" &&
+        Array.isArray(savingsLabels) &&
+        savingsLabels.length > 0
+    ) {
+        new Chart(savingsCanvas, {
+            type: "doughnut",
+            data: {
+                labels: savingsLabels.map((goal, i) =>
+                    `${goal} (${savingsPercents[i]}%)`
+                ),
+                datasets: [{
+                    data: savingsPercents,
+                    backgroundColor: [
+                        "#FF5722", "#009688", "#9C27B0",
+                        "#03A9F4", "#8BC34A", "#FFC107"
+                    ]
+                }]
+            },
+            options: {
+                plugins: {
+                    title: {
+                        display: true,
+                        text: "Savings Progress (%)"
+                    }
+                }
+            }
+        });
+    }
+
+
+
+    /* ======================================================
+       HISTORY CHART
+    ====================================================== */
+    const historyCanvas = document.getElementById("historyChart");
+    if (historyCanvas && typeof Chart !== "undefined") {
+        new Chart(historyCanvas, {
+            type: "line",
+            data: {
+                labels: ["Nov 13", "Nov 14", "Nov 15"],
                 datasets: [{
                     data: [-95.20, 1600, -52.80],
-                    borderColor: '#673AB7',
+                    borderColor: "#673AB7",
                     tension: 0.3
                 }]
             }
@@ -137,56 +229,29 @@ if (document.getElementById("savingsChart") &&
 
 
 
-
     /* ======================================================
-       INVESTMENTS PAGE – DB DRIVEN CHARTS ONLY
+       INVESTMENTS POLAR AREA (DB-driven)
+       Requires PHP variables:
+       - investmentLabels
+       - investmentValues
     ====================================================== */
-
-    // RADAR CHART
-    if (document.getElementById("investmentsChart") &&
+    const investmentsPolarCanvas = document.getElementById("investmentsPolar");
+    if (
+        investmentsPolarCanvas &&
+        typeof Chart !== "undefined" &&
         typeof investmentLabels !== "undefined" &&
-        investmentLabels.length > 0) {
-
-        new Chart(investmentsChart, {
-            type: "radar",
-            data: {
-                labels: investmentLabels,
-                datasets: [{
-                    label: "Total Invested",
-                    data: investmentValues,
-                    backgroundColor: "rgba(63, 81, 181, 0.25)",
-                    borderColor: "#3F51B5",
-                    pointBackgroundColor: "#3F51B5"
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: { position: "top" },
-                    title: {
-                        display: true,
-                        text: "Total Amount Invested by Asset"
-                    }
-                }
-            }
-        });
-    }
-
-
-    // POLAR AREA CHART
-    if (document.getElementById("investmentsPolar") &&
-        typeof investmentLabels !== "undefined" &&
-        investmentLabels.length > 0) {
-
+        Array.isArray(investmentLabels) &&
+        investmentLabels.length > 0
+    ) {
         const total = investmentValues.reduce((a, b) => a + b, 0);
         const percentages = investmentValues.map(v =>
             ((v / total) * 100).toFixed(1)
         );
 
-        new Chart(investmentsPolar, {
+        new Chart(investmentsPolarCanvas, {
             type: "polarArea",
             data: {
-                labels: investmentLabels.map((name, i) => 
+                labels: investmentLabels.map((name, i) =>
                     `${name} (${percentages[i]}%)`
                 ),
                 datasets: [{
@@ -203,6 +268,7 @@ if (document.getElementById("savingsChart") &&
                     borderWidth: 1
                 }]
             },
+
             options: {
                 responsive: true,
                 plugins: {

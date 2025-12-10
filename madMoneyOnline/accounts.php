@@ -27,7 +27,8 @@
             $accountID = $_SESSION['account_id'];
             $stBal     = $_POST['stBal'];
             $accType   = $_POST['accType'];
-            $budget     = $_POST['budget'];
+            $budget = 0.00; // default, since we removed budget input
+
             $accName   = $_POST['accName'];
             // lets add account to DB
             if ($stmt = $con->prepare('INSERT INTO money_account (SYS_USER_ID, ACCOUNT_TYPE, MONTHLY_LIMIT, ACCOUNT_NAME, ACCOUNT_START_BALANCE) values(?, ?, ?, ?, ? )' ) ) {
@@ -89,10 +90,7 @@
 
                             <label class="form-label">Starting Balance</label>
                             <input type="text" class="form-control mb-3" id="stBal" name ="stBal" placeholder="0.00">
-
-                            <label class="form-label">Budget</label>
-                            <input type="text" class="form-control mb-3" id="budget" name ="budget" placeholder="0.00">
-
+                            
 
                             <button type="button" class="btn btn-primary w-100" onClick="validate(this);">Save Account</button>
                         </form>
@@ -150,7 +148,7 @@
 <script>
     function validate(butt) {
         var inputValue = $("#stBal").val();
-        var inputBug   = $("#budget").val();
+
         if( $("#accType").val() == ""){
             alert("Please select Account Type");
             return;
@@ -163,17 +161,45 @@
             alert("Invalid starting balance");
             return;
         }
-        if( ! ($.isNumeric(inputBug)) )  {
-            alert("Invalid Budget value");
-            return;
-        }
         
-
         butt.form.submit();
     }
 </script>
 <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>    
+
+<?php
+require 'includes/dbOperations.php';
+
+$userId = $_SESSION['account_id'];
+
+$sql = "
+    SELECT account_name AS name, account_start_balance AS bal
+    FROM money_account
+    WHERE sys_user_id = $userId
+    ORDER BY account_name
+";
+
+$result = mysqli_query($con, $sql);
+
+$labels = [];
+$values = [];
+
+if (mysqli_num_rows($result) > 0) {
+    while ($row = mysqli_fetch_assoc($result)) {
+        $labels[] = $row['name'];
+        $values[] = (float)$row['bal'];
+    }
+}
+
+mysqli_close($con);
+?>
+
+<script>
+    // REQUIRED BY charts.js
+    var accountLabels = <?php echo json_encode($labels); ?>;
+    var accountValues = <?php echo json_encode($values); ?>;
+</script>
+
 </body>
 </html>
-

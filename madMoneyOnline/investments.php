@@ -125,6 +125,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                 <option>ETF</option>
                                 <option>Crypto</option>
                                 <option>Bond</option>
+                                 <option>Business</option>
+                                 <option>Real Estate</option>
+                                 <option>Precious Metals</option>
+                                 <option>Gold</option>
+                                 <option>Silver</option>
                                 <option>Other</option>
                             </select>
 
@@ -162,6 +167,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                     <th>Account</th>
                                     <th>Asset</th>
                                     <th>Type</th>
+                                    <!-- <th>purchase Value</th> -->
+                                     <!-- <th>Current Value</th> -->
                                     <th class="text-end">Amount</th>
                                 </tr>
                             </thead>
