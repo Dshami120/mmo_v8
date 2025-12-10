@@ -86,18 +86,40 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    if (document.getElementById("savingsChart")) {
-        new Chart(savingsChart, {
-            type: 'doughnut',
-            data: {
-                labels: ['Emergency (40%)', 'Vacation (20%)', 'Laptop (70%)'],
-                datasets: [{
-                    data: [40, 20, 70],
-                    backgroundColor: ['#FF5722', '#009688', '#9C27B0']
-                }]
+/* ========= SAVINGS CHART (DB DRIVEN) ========= */
+if (document.getElementById("savingsChart") &&
+    typeof savingsLabels !== "undefined" &&
+    savingsLabels.length > 0) {
+
+    new Chart(savingsChart, {
+        type: "doughnut",
+        data: {
+            labels: savingsLabels.map((goal, i) =>
+                `${goal} (${savingsPercents[i]}%)`
+            ),
+            datasets: [{
+                data: savingsPercents,
+                backgroundColor: [
+                    "#FF5722",
+                    "#009688",
+                    "#9C27B0",
+                    "#03A9F4",
+                    "#8BC34A",
+                    "#FFC107"
+                ]
+            }]
+        },
+        options: {
+            plugins: {
+                title: {
+                    display: true,
+                    text: "Savings Progress (%)"
+                }
             }
-        });
-    }
+        }
+    });
+}
+
 
     if (document.getElementById("historyChart")) {
         new Chart(historyChart, {

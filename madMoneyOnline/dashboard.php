@@ -81,7 +81,7 @@
             <section class="row g-3">
                 <section class="col-12 col-md-4">
                     <section class="border rounded p-3 bg-white">
-                        <h2 class="h5">Total Balance</h2>
+                        <h2 class="h5">Current Balance</h2>
                         <p class="display-6 text-success mb-0">$ <?php echo ($inc - $exp) ?></p>
                         <p class="text-muted">Across all accounts</p>
                     </section>
@@ -89,17 +89,17 @@
 
                 <section class="col-12 col-md-4">
                     <section class="border rounded p-3 bg-white">
-                        <h2 class="h5">This Month’s Income</h2>
+                        <h2 class="h5">Income</h2>
                         <p class="display-6 text-primary mb-0">$ <?php echo $inc ?></p>
-                        <p class="text-muted">+8% vs last month</p>
+                        <p class="text-muted">This Month</p>
                     </section>
                 </section>
 
                 <section class="col-12 col-md-4">
                     <section class="border rounded p-3 bg-white">
-                        <h2 class="h5">This Month’s Expenses</h2>
+                        <h2 class="h5">Expenses</h2>
                         <p class="display-6 text-danger mb-0">$ <?php echo $exp ?></p>
-                        <p class="text-muted">Budget used: 68%</p>
+                        <p class="text-muted">This Month</p>
                     </section>
                 </section>
             </section>
@@ -134,13 +134,14 @@
                                 <th>Date</th>
                                 <th>Type</th>
                                 <th>Category</th>
+                                <th>Description</th>
                                 <th class="text-end">Amount</th>
                             </tr>
                             </thead>
                             <tbody>
                             <?php
                                 require  'includes/dbOperations.php';
-                                $sql = "SELECT t.Transaction_date as dat, a.account_type as acc, t.transaction_category as cat, t.transaction_amount as amo FROM monery_transactions t, money_account a "; 
+                                $sql = "SELECT t.Transaction_date as dat, a.account_type as acc, t.transaction_category as cat, t.transaction_Desc as Description, t.transaction_amount as amo FROM monery_transactions t, money_account a "; 
                                 $sql = $sql ." where t.sys_user_id =".$_SESSION['account_id']." and t.to_account_id =  a.sys_account_id order by t.transaction_date desc";
                                 $result = mysqli_query($con, $sql);
                                 if (mysqli_num_rows($result) > 0) {
@@ -150,6 +151,7 @@
                                         echo "<tr><td>" .$row["dat"]."</td>";
                                         echo "<td>" .$row["acc"]."</td>";
                                         echo "<td>" .$row["cat"]."</td>";
+                                        echo "<td>" .$row["Description"]."</td>";
                                         echo "<td class=\"text-end\">" .$row["amo"]."</td></tr>";
                                         $i = $i+1;
                                         if($i > 10) { break; }

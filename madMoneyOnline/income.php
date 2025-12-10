@@ -22,6 +22,8 @@
 <body class="bg-light">
   <?php
         $msg = '';
+        $incomeLabels = [];
+        $incomeValues = [];
         require  'includes/dbOperations.php';
         // Check if form data was submitted via POST
         if ($_SERVER["REQUEST_METHOD"] == "POST") {
@@ -48,7 +50,22 @@
             }
             $con->close();
         }    
+        require  'includes/dbOperations.php';
+        $sql = "SELECT t.transaction_category as cat, sum(t.transaction_amount) as tot FROM monery_transactions t, money_account a ";
+        $sql = $sql ." where t.sys_user_id =".$_SESSION['account_id']." and t.to_account_id =  a.sys_account_id ";
+        $sql = $sql ." and a.account_type = 'Income' ";
+        $sql = $sql ." group by t.transaction_category order by 1 ";
+        $result = mysqli_query($con, $sql);
+     
+        if (mysqli_num_rows($result) > 0) {
+            // Output data of each row
+            while($row = mysqli_fetch_assoc($result)) {
 
+                array_push($incomeLabels,  $row["cat"] );
+                array_push($incomeValues,  $row["tot"] );
+            }
+        }
+        $con->close();
    ?>    
 <main class="container-fluid">
     <section class="row min-vh-100">
@@ -133,7 +150,7 @@
                             <tbody>
                             <?php
                                 require  'includes/dbOperations.php';
-                                $sql = "SELECT t.Transaction_date as dat, a.account_type as acc, t.transaction_category as cat, t.transaction_desc as Description, t.transaction_amount as amo FROM monery_transactions t, money_account a "; 
+                                $sql = "SELECT t.Transaction_date as dat, a.account_type as acc, t.transaction_category as cat, t.transaction_Desc as Description, t.transaction_amount as amo FROM monery_transactions t, money_account a "; 
                                 $sql = $sql ." where t.sys_user_id =".$_SESSION['account_id']." and a.account_type in (\"Income\", \"Saving\", \"Investment\") ";
                                 $sql = $sql ." and t.to_account_id =  a.sys_account_id order by t.transaction_date desc";
                                 $result = mysqli_query($con, $sql);
@@ -158,8 +175,8 @@
 
                     <!-- CHART UNDER TABLE (INSIDE SAME RIGHT COLUMN) -->
                     <section class="mt-4 border rounded p-3 bg-white">
-                        <h2 class="h5 mb-3">Income Over Time</h2>
-                        <canvas id="incomeChart"></canvas>
+                        <h2 class="h5 mb-3">Income By Category</h2>
+                        <canvas id="incomeChart1"></canvas>
                     </section>
 
                 </section>
@@ -191,7 +208,28 @@
     }
 </script>
 <!-- jQuery -->
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>   
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>  
+ 
+ <script>
+    const  incCtx = document.getElementById("incomeChart1").getContext("2d");
+    const cht =         new Chart(incCtx, {
+            type: 'doughnut',
+            data: {
+            labels: [<?php $ss = count($incomeLabels); for ($i=0; $i < $ss-1; $i++){ echo "\"".$incomeLabels[$i]."\", "; }  echo "\"". $incomeLabels[$ss-1]."\"],\n"; ?>
+                datasets: [{
+                    label: 'Income',
+                    data: [<?php $ss = count($incomeValues); for ($i=0; $i < $ss-1; $i++){ echo $incomeValues[$i].", "; } echo $incomeValues[$ss-1]."],\n"; ?>
+                    backgroundColor: [
+                                "#3F51B5",
+                                "#00ACC1",
+                                "#E91E63",
+                                "#9C27B0",
+                                "#8BC34A",
+                                "#FFCA28"
+                            ]
+                }]
+            }
+        });
+   </script>     
 </body>
 </html>
-
