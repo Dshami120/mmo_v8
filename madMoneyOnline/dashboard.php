@@ -6,20 +6,49 @@
         header('Location: index.html');
         exit;
     }
- /*   
-    // Access a single session variable
-    if (isset($_SESSION['username'])) {
-        echo "Welcome, " . $_SESSION['username'] . "!";
-    } else {
-        echo "No username found in session.";
-    }
 
-    // Access all session data (for debugging or inspection)
-    echo "<pre>";
-    print_r($_SESSION);
-    echo "</pre>";
-    ?>
-    */
+/* ============================================================
+   DASHBOARD DATE FILTER (WEEK / MONTH / YEAR / ALL / CUSTOM)
+   ============================================================ */
+
+// Read incoming GET params
+$range    = $_GET['range'] ?? 'month'; // default to "This Month"
+$fromDate = $_GET['from']  ?? '';
+$toDate   = $_GET['to']    ?? '';
+
+// Compute quick ranges
+$todayTs = time();
+$todayY  = date('Y', $todayTs);
+$todayM  = date('m', $todayTs);
+$todayD  = date('d', $todayTs);
+
+if ($range !== 'custom') {
+    switch ($range) {
+        case 'week':
+            // Monday–Sunday of current week
+            $weekStartTs = strtotime('monday this week', $todayTs);
+            $weekEndTs   = strtotime('sunday this week', $todayTs);
+            $fromDate    = date('Y-m-d', $weekStartTs);
+            $toDate      = date('Y-m-d', $weekEndTs);
+            break;
+
+        case 'month':
+            $fromDate = date('Y-m-01', $todayTs);
+            $toDate   = date('Y-m-t',  $todayTs);
+            break;
+
+        case 'year':
+            $fromDate = $todayY . '-01-01';
+            $toDate   = $todayY . '-12-31';
+            break;
+
+        case 'all':
+            // No date filter
+            $fromDate = '';
+            $toDate   = '';
+            break;
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -43,14 +72,136 @@
 
         <section class="col-12 col-md-9 col-lg-10 p-4">
             <h1 class="mb-4">Dashboard Overview</h1>
+
+            <!-- ===================== DASHBOARD DATE FILTERS ===================== -->
             <?php
-                require  'includes/dbOperations.php';
+                // Build base params (so we can keep other future GET params if needed)
+                $dashBaseParams = $_GET;
+                unset($dashBaseParams['range'], $dashBaseParams['from'], $dashBaseParams['to']);
+
+                function dashRangeUrl($baseParams, $rangeValue) {
+                    $params = $baseParams;
+                    $params['range'] = $rangeValue;
+                    return '?' . http_build_query($params);
+                }
+
+                $dashBtnClass = function($r) use ($range) {
+                    return $range === $r ? 'btn btn-sm btn-primary' : 'btn btn-sm btn-outline-primary';
+                };
+            ?>
+            <section class="border rounded p-3 bg-white mb-3">
+                <div class="d-flex flex-wrap align-items-center justify-content-between mb-3">
+                    <div class="mb-2 mb-md-0">
+                        <strong>Quick Ranges:</strong>
+                    </div>
+                    <div class="btn-group">
+                        <a href="<?= htmlspecialchars(dashRangeUrl($dashBaseParams, 'week'))   ?>" class="<?= $dashBtnClass('week') ?>">This Week</a>
+                        <a href="<?= htmlspecialchars(dashRangeUrl($dashBaseParams, 'month'))  ?>" class="<?= $dashBtnClass('month') ?>">This Month</a>
+                        <a href="<?= htmlspecialchars(dashRangeUrl($dashBaseParams, 'year'))   ?>" class="<?= $dashBtnClass('year') ?>">This Year</a>
+                        <a href="<?= htmlspecialchars(dashRangeUrl($dashBaseParams, 'all'))    ?>" class="<?= $dashBtnClass('all') ?>">All Time</a>
+                        <a href="<?= htmlspecialchars(dashRangeUrl($dashBaseParams, 'custom')) ?>" class="<?= $dashBtnClass('custom') ?>">Custom</a>
+                    </div>
+                </div>
+
+                <!-- Custom date range form -->
+                <form method="GET" class="row g-3">
+                    <!-- When user submits custom dates, force range=custom -->
+                    <input type="hidden" name="range" value="custom">
+
+                    <section class="col-12 col-md-4">
+                        <label class="form-label">From Date</label>
+                        <input type="date" class="form-control" name="from"
+                               value="<?= htmlspecialchars($fromDate) ?>">
+                    </section>
+
+                    <section class="col-12 col-md-4">
+                        <label class="form-label">To Date</label>
+                        <input type="date" class="form-control" name="to"
+                               value="<?= htmlspecialchars($toDate) ?>">
+                    </section>
+
+                    <section class="col-12 col-md-4 d-flex align-items-end gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            Apply
+                        </button>
+                        <a href="dashboard.php" class="btn btn-outline-secondary">
+                            Reset
+                        </a>
+                    </section>
+                </form>
+
+                <?php if ($fromDate !== '' || $toDate !== ''): ?>
+                    <div class="mt-3 small text-muted">
+                        Active date range:
+                        <?php
+                            $labelFrom = $fromDate !== '' ? $fromDate : '…';
+                            $labelTo   = $toDate   !== '' ? $toDate   : '…';
+                            echo htmlspecialchars($labelFrom . ' to ' . $labelTo);
+                        ?>
+                    </div>
+                <?php endif; ?>
+            </section>
+            <!-- ================== END DASHBOARD DATE FILTERS ==================== -->
+            <!-- ================== END DASHBOARD DATE FILTERS ==================== -->
+
+<?php
+// =============================================================
+//   CONTINUOUS BALANCE CALCULATION (Corrected Logic)
+// =============================================================
+require 'includes/dbOperations.php';
+
+$userId = $_SESSION['account_id'];
+
+// Balance must be calculated from the beginning of time → end of filter date
+$balanceEndDate = ($toDate !== '' ? $toDate : date('Y-m-d'));
+
+// ===== Total Income Up To End Date =====
+$sqlInc = "
+    SELECT COALESCE(SUM(t.transaction_amount), 0) AS total
+    FROM monery_transactions t
+    JOIN money_account a ON t.to_account_id = a.sys_account_id
+    WHERE t.sys_user_id = $userId
+      AND a.account_type = 'Income'
+      AND t.transaction_date <= '$balanceEndDate'
+";
+$resInc = mysqli_query($con, $sqlInc);
+$rowInc = mysqli_fetch_assoc($resInc);
+$totalIncomeUpToNow = $rowInc['total'] ?? 0;
+
+// ===== Total Expense Up To End Date =====
+$sqlExp = "
+    SELECT COALESCE(SUM(t.transaction_amount), 0) AS total
+    FROM monery_transactions t
+    JOIN money_account a ON t.to_account_id = a.sys_account_id
+    WHERE t.sys_user_id = $userId
+      AND a.account_type = 'Expense'
+      AND t.transaction_date <= '$balanceEndDate'
+";
+$resExp = mysqli_query($con, $sqlExp);
+$rowExp = mysqli_fetch_assoc($resExp);
+$totalExpenseUpToNow = $rowExp['total'] ?? 0;
+
+$trueContinuousBalance = $totalIncomeUpToNow - $totalExpenseUpToNow;
+?>
+
+
+            <?php
                     $exp =0;
                     $inc =0;
                     $myExp = [];
                     $myInc =[];
-                $sql = "SELECT a.account_type as typ, t.transaction_category as cat, sum(t.transaction_amount) as tot FROM madmoneyonline.monery_transactions t, madmoneyonline.money_account a ";
+                $sql = "SELECT a.account_type as typ, t.transaction_category as cat, sum(t.transaction_amount) as tot 
+                        FROM madmoneyonline.monery_transactions t, madmoneyonline.money_account a ";
                 $sql = $sql ." where t.sys_user_id =".$_SESSION['account_id']." and t.to_account_id =  a.sys_account_id ";
+
+                // ===== Apply date filter to summary query =====
+                if ($fromDate !== '') {
+                    $sql .= " and t.transaction_date >= '" . $fromDate . "' ";
+                }
+                if ($toDate !== '') {
+                    $sql .= " and t.transaction_date <= '" . $toDate . "' ";
+                }
+
                 $sql = $sql ." group by transaction_category order by 1 ";
                 $result = mysqli_query($con, $sql);
                 if (mysqli_num_rows($result) > 0) {
@@ -82,8 +233,16 @@
                 <section class="col-12 col-md-4">
                     <section class="border rounded p-3 bg-white">
                         <h2 class="h5">Current Balance</h2>
-                        <p class="display-6 text-success mb-0">$ <?php echo ($inc - $exp) ?></p>
-                        <p class="text-muted">Across all accounts</p>
+                        <p class="display-6 text-success mb-0">$ <?php echo number_format($trueContinuousBalance, 2) ?></p>
+                        <p class="text-muted">
+                            <?php
+                                if ($fromDate === '' && $toDate === '') {
+                                    echo "Across all accounts (All Time)";
+                                } else {
+                                    echo "Across all accounts (Filtered Range)";
+                                }
+                            ?>
+                        </p>
                     </section>
                 </section>
 
@@ -91,7 +250,15 @@
                     <section class="border rounded p-3 bg-white">
                         <h2 class="h5">Income</h2>
                         <p class="display-6 text-primary mb-0">$ <?php echo $inc ?></p>
-                        <p class="text-muted">This Month</p>
+                        <p class="text-muted">
+                            <?php
+                                if ($fromDate === '' && $toDate === '') {
+                                    echo "All Time";
+                                } else {
+                                    echo "Filtered Range";
+                                }
+                            ?>
+                        </p>
                     </section>
                 </section>
 
@@ -99,7 +266,15 @@
                     <section class="border rounded p-3 bg-white">
                         <h2 class="h5">Expenses</h2>
                         <p class="display-6 text-danger mb-0">$ <?php echo $exp ?></p>
-                        <p class="text-muted">This Month</p>
+                        <p class="text-muted">
+                            <?php
+                                if ($fromDate === '' && $toDate === '') {
+                                    echo "All Time";
+                                } else {
+                                    echo "Filtered Range";
+                                }
+                            ?>
+                        </p>
                     </section>
                 </section>
             </section>
@@ -109,16 +284,17 @@
                 <section class="col-12 col-lg-6">
                     <section class="border rounded p-3 bg-white">
                         <h2 class="h5 mb-3">Spending by Category</h2>
-                        <p class="text-muted">
-                            (Chart placeholder – connect Chart.js later)
-                        </p>
+                        <p class="text-muted"></p>
                         <ul class="list-group">
                             <?php
                                 $ss = count($myExp);
                                 for ($i=0; $i < $ss; $i++){
                                     echo '<li class="list-group-item d-flex justify-content-between">';
-                                    echo "<span>" .$myExp[$i][0] ."</span><span>$" .$myExp[$i][1]. "</span>";
+                                    echo "<span>" .$myExp[$i][0] ."</span><span>$" .number_format($myExp[$i][1], 2). "</span>";
                                     echo '</li>';
+                                }
+                                if ($ss === 0) {
+                                    echo '<li class="list-group-item text-muted text-center">No expenses in this date range.</li>';
                                 }
                             ?>
                           </ul>
@@ -141,8 +317,20 @@
                             <tbody>
                             <?php
                                 require  'includes/dbOperations.php';
-                                $sql = "SELECT t.Transaction_date as dat, a.account_type as acc, t.transaction_category as cat, t.transaction_Desc as Description, t.transaction_amount as amo FROM monery_transactions t, money_account a "; 
-                                $sql = $sql ." where t.sys_user_id =".$_SESSION['account_id']." and t.to_account_id =  a.sys_account_id order by t.transaction_date desc";
+                                $sql = "SELECT t.Transaction_date as dat, a.account_type as acc, t.transaction_category as cat, t.transaction_Desc as Description, t.transaction_amount as amo 
+                                        FROM monery_transactions t, money_account a "; 
+                                $sql = $sql ." where t.sys_user_id =".$_SESSION['account_id']." and t.to_account_id =  a.sys_account_id ";
+
+                                // ===== Apply date filter to recent-transactions query =====
+                                if ($fromDate !== '') {
+                                    $sql .= " and t.transaction_date >= '" . $fromDate . "' ";
+                                }
+                                if ($toDate !== '') {
+                                    $sql .= " and t.transaction_date <= '" . $toDate . "' ";
+                                }
+
+                                $sql = $sql ." order by t.transaction_date desc";
+
                                 $result = mysqli_query($con, $sql);
                                 if (mysqli_num_rows($result) > 0) {
                                     // Output data of each row
@@ -151,11 +339,13 @@
                                         echo "<tr><td>" .$row["dat"]."</td>";
                                         echo "<td>" .$row["acc"]."</td>";
                                         echo "<td>" .$row["cat"]."</td>";
-                                        echo "<td>" .$row["Description"]."</td>";
-                                        echo "<td class=\"text-end\">" .$row["amo"]."</td></tr>";
+                                        echo "<td>" .htmlspecialchars($row["Description"])."</td>";
+                                        echo "<td class=\"text-end\">" .number_format($row["amo"], 2)."</td></tr>";
                                         $i = $i+1;
                                         if($i > 10) { break; }
                                     }
+                                } else {
+                                    echo '<tr><td colspan="5" class="text-center text-muted">No transactions in this date range.</td></tr>';
                                 }
                                 mysqli_close($con);
                                 ?>
@@ -304,4 +494,3 @@
     </script>
 </body>
 </html>
-

@@ -1,0 +1,10 @@
+CREATE TABLE money_budgets (
+    budget_id INT AUTO_INCREMENT PRIMARY KEY,
+    sys_user_id INT NOT NULL,
+    category VARCHAR(45) NOT NULL,
+    limit_amount DECIMAL(12,2) NOT NULL,
+    target_date DATE DEFAULT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP 
+        ON UPDATE CURRENT_TIMESTAMP
+);

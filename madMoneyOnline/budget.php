@@ -41,8 +41,8 @@
                             <label class="form-label">Monthly Limit</label>
                             <input type="number" class="form-control mb-3" placeholder="0.00">
 
-                            <label class="form-label">Month</label>
-                            <input type="month" class="form-control mb-3">
+                            <label class="form-label">Target Date</label>
+                            <input type="date" name="targetDate" class="form-control mb-3">
 
                             <button type="submit" class="btn btn-primary w-100">Save Budget</button>
                         </form>

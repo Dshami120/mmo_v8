@@ -201,13 +201,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
                     </section>
 
-
-                    <!-- PORTFOLIO CHART (Radar) -->
-                    <section class="mt-4 border rounded p-3 bg-white">
-                        <h2 class="h5 mb-3">Portfolio Allocation</h2>
-                        <canvas id="investmentsChart"></canvas>
-                    </section>
-
                     <!-- SECOND CHART (POLAR AREA) -->
                     <section class="mt-4 border rounded p-3 bg-white">
                         <h2 class="h5 mb-3">Portfolio Distribution</h2>
@@ -243,41 +236,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
             mysqli_close($con);
             ?>
-
-
-
-            <!-- RADAR CHART -->
-            <script>
-                const invCtx = document.getElementById("investmentsChart").getContext("2d");
-
-                new Chart(invCtx, {
-                    type: "radar",
-                    data: {
-                        labels: <?php echo json_encode($labels); ?>,
-                        datasets: [{
-                            data: <?php echo json_encode($values); ?>,
-                            backgroundColor: [
-                                "#3F51B5",
-                                "#00ACC1",
-                                "#FFCA28",
-                                "#E91E63",
-                                "#8BC34A",
-                                "#9C27B0"
-                            ]
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        plugins: {
-                            legend: { position: "top" },
-                            title: {
-                                display: true,
-                                text: "Total Amount Invested by Asset"
-                            }
-                        }
-                    }
-                });
-            </script>
 
             <!-- Polar CHART -->
             <script>

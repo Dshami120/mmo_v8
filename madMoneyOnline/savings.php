@@ -39,7 +39,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["createGoal"])) {
     }
 
     $stmt->close();
+    
 }
+
 
 /* ============================================================
    2. ADD MONEY TO SAVINGS GOAL
@@ -329,7 +331,7 @@ $con->close();
 <script>
 <?php if (count($chartLabels) > 0): ?>
 new Chart(document.getElementById("savingsChart1"), {
-    type: "doughnut",
+    type: "bar",
     data: {
         labels: <?= json_encode($chartLabels) ?>,
         datasets: [{

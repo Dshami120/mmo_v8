@@ -41,7 +41,7 @@
                
                 if ($stmt->execute()) {
                     // Account created, we are good, send to login page
-                    $msg="Expense booked";
+                    $msg="Expense added";
                 } else {
                     $msg="Expense booking Failed. Please retry.";
                 }
@@ -89,7 +89,7 @@
                         <h2 class="h5 mb-3">Add Expense</h2>
 
                         <form action="expenses.php" method="post">
-                            <label class="form-label">Funds Source Account</label>
+                            <label class="form-label">Source Account:</label> <p class="text-muted">(what account are you spending from?)</p>
                             <select class="form-select mb-3" name="accSrcID" id="accSrcID">
                             <?php
                                 require  'includes/dbOperations.php';
@@ -105,7 +105,8 @@
                                 mysqli_close($con);
                             ?>
                             </select>
-                            <label class="form-label">Expense Account</label>
+                            
+                            <label class="form-label">Expense Account</label> <p class="text-muted">(who are you paying?)</p>
                             <select class="form-select mb-3" name="accID" id="accID">
                             <?php
                                 require  'includes/dbOperations.php';
@@ -147,7 +148,7 @@
                             <label class="form-label">Date</label>
                             <input type="date" class="form-control mb-3"  id="transDate" name="transDate" >
 
-                            <button type="button" class="btn btn-primary w-100" onClick="validate(this);">Save Income</button>
+                            <button type="button" class="btn btn-primary w-100" onClick="validate(this);">Save Expense</button>
                         </form>
                     </section>
                 </section>
