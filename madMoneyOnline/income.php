@@ -126,13 +126,14 @@
                                 <th>Date</th>
                                 <th>Type</th>
                                 <th>Category</th>
+                                <th>Description</th>
                                 <th class="text-end">Amount</th>
                             </tr>
                             </thead>
                             <tbody>
                             <?php
                                 require  'includes/dbOperations.php';
-                                $sql = "SELECT t.Transaction_date as dat, a.account_type as acc, t.transaction_category as cat, t.transaction_amount as amo FROM monery_transactions t, money_account a "; 
+                                $sql = "SELECT t.Transaction_date as dat, a.account_type as acc, t.transaction_category as cat, t.transaction_desc as Description, t.transaction_amount as amo FROM monery_transactions t, money_account a "; 
                                 $sql = $sql ." where t.sys_user_id =".$_SESSION['account_id']." and a.account_type in (\"Income\", \"Saving\", \"Investment\") ";
                                 $sql = $sql ." and t.to_account_id =  a.sys_account_id order by t.transaction_date desc";
                                 $result = mysqli_query($con, $sql);
@@ -143,6 +144,7 @@
                                         echo "<tr><td>" .$row["dat"]."</td>";
                                         echo "<td>" .$row["acc"]."</td>";
                                         echo "<td>" .$row["cat"]."</td>";
+                                        echo "<td>" .$row["Description"]."</td>";
                                         echo "<td class=\"text-end\">" .$row["amo"]."</td></tr>";
                                         $i = $i+1;
                                         if($i > 10) { break; }

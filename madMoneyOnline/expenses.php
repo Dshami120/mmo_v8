@@ -21,9 +21,11 @@
 <body class="bg-light">
   <?php
         $msg = '';
-        require  'includes/dbOperations.php';
+        $expenseLabels = [];
+        $expenseValues = [];
         // Check if form data was submitted via POST
         if ($_SERVER["REQUEST_METHOD"] == "POST") {
+            require  'includes/dbOperations.php';
             //get data out
             $accountID = $_SESSION['account_id'];
             $accSrcID  = $_POST['accSrcID'];
@@ -47,9 +49,26 @@
                 $stmt->close();
             }
             $con->close();
-        }    
 
+ 
+        }    
+        require  'includes/dbOperations.php';
+        $sql = "SELECT t.transaction_category as cat, sum(t.transaction_amount) as tot FROM monery_transactions t, money_account a ";
+        $sql = $sql ." where t.sys_user_id =".$_SESSION['account_id']." and t.to_account_id =  a.sys_account_id ";
+        $sql = $sql ." and a.account_type = 'Expense' ";
+        $sql = $sql ." group by t.transaction_category order by 1 ";
+        $result = mysqli_query($con, $sql);
+        if (mysqli_num_rows($result) > 0) {
+            // Output data of each row
+            while($row = mysqli_fetch_assoc($result)) {
+
+                array_push($expenseLabels,  $row["cat"] );
+                array_push($expenseValues,  $row["tot"] );
+            }
+        }
+        $con->close();
    ?>    
+    
 <main class="container-fluid">
     <section class="row min-vh-100">
 
@@ -142,13 +161,14 @@
                                 <th>Date</th>
                                 <th>Type</th>
                                 <th>Category</th>
+                                <th>Description</th>
                                 <th class="text-end">Amount</th>
                             </tr>
                             </thead>
                             <tbody>
                             <?php
                                 require  'includes/dbOperations.php';
-                                $sql = "SELECT t.Transaction_date as dat, a.account_type as acc, t.transaction_category as cat, t.transaction_amount as amo FROM monery_transactions t, money_account a "; 
+                                $sql = "SELECT t.Transaction_date as dat, a.account_type as acc, t.transaction_category as cat, t.transaction_desc as Description, t.transaction_amount as amo FROM monery_transactions t, money_account a "; 
                                 $sql = $sql ." where t.sys_user_id =".$_SESSION['account_id']." and a.account_type =\"Expense\" ";
                                 $sql = $sql ." and t.to_account_id =  a.sys_account_id order by t.transaction_date desc";
                                 $result = mysqli_query($con, $sql);
@@ -159,6 +179,7 @@
                                         echo "<tr><td>" .$row["dat"]."</td>";
                                         echo "<td>" .$row["acc"]."</td>";
                                         echo "<td>" .$row["cat"]."</td>";
+                                        echo "<td>" .$row["Description"]."</td>";
                                         echo "<td class=\"text-end\">" .$row["amo"]."</td></tr>";
                                         $i = $i+1;
                                         if($i > 10) { break; }
@@ -173,7 +194,7 @@
                         <!-- CHARTS -->
                         <section class="mt-4 border rounded p-3 bg-white">
                             <h2 class="h5 mb-3">Expenses by Category</h2>
-                            <canvas id="expensesChart"></canvas>
+                            <canvas id="expensesChart1"></canvas>
                         </section>
 
                 </section>
@@ -204,8 +225,31 @@
         butt.form.submit();
     }
 </script>
+
+<script>
+    const expCtx = document.getElementById("expensesChart1").getContext("2d");
+    const cht = new Chart(expCtx, {
+        type: 'bar',
+        data: {
+            labels: [<?php $ss = count($expenseLabels); for ($i=0; $i < $ss-1; $i++){ echo "\"".$expenseLabels[$i]."\", "; }  echo "\"". $expenseLabels[$ss-1]."\"],\n"; ?>
+            datasets: [{
+                label: 'Amount',
+                data: [<?php $ss = count($expenseValues); for ($i=0; $i < $ss-1; $i++){ echo $expenseValues[$i].", "; } echo $expenseValues[$ss-1]."],\n"; ?>
+                backgroundColor: [
+                        "rgba(63,81,181,0.8)",
+                        "rgba(0,172,193,0.8)",
+                        "rgba(255,202,40,0.8)",
+                        "rgba(233,30,99,0.8)",
+                        "rgba(139,195,74,0.8)",
+                        "rgba(156,39,176,0.8)"
+                    ],   
+            }]
+        }
+    });
+
+</script>
+
 <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>   
 </body>
 </html>
-
